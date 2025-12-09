@@ -1,0 +1,37 @@
+{
+  "impacts": {
+    "revision": 26.74479991553162,
+    "confiance": 22.42897158863545,
+    "sante": 49.57784031995261
+  },
+  "classement": [
+    {
+      "rang": 1,
+      "facteur": "Santé",
+      "impact": 49.57784031995261
+    },
+    {
+      "rang": 2,
+      "facteur": "Révision",
+      "impact": 26.74479991553162
+    },
+    {
+      "rang": 3,
+      "facteur": "Confiance",
+      "impact": 22.42897158863545
+    }
+  ],
+  "facteur_principal": "Santé",
+  "taux_par_condition": {
+    "revision_oui": 74.79674796747967,
+    "revision_non": 48.05194805194805,
+    "confiance_oui": 75.49019607843137,
+    "confiance_non": 53.06122448979592,
+    "sante_bonne": 75.15923566878982,
+    "sante_malade": 25.581395348837212
+  },
+  "scenarios_extremes": {
+    "meilleur_cas": 97.95918367346938,
+    "pire_cas": 7.6923076923076925
+  }
+}

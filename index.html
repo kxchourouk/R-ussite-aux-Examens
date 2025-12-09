@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Dans <head> après <title> -->
+<!-- Après la balise <title> -->
+
+    <title>Prédiction Réussite Étudiante</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #d3c938 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #d3c938 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .question {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .question h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .options {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .option {
+            flex: 1;
+        }
+        
+        .option input[type="radio"] {
+            display: none;
+        }
+        
+        .option label {
+            display: block;
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .option input[type="radio"]:checked + label {
+            background: #d3c938;
+            color: white;
+            border-color: #d3c938;
+            transform: scale(1.05);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #d3c938 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 30px;
+            background: #f0f0f0;
+            border-radius: 12px;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .probs {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .prob-card {
+            flex: 1;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+        }
+        
+        .success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .fail {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .prob-card h4 {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .prob-card .percent {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        
+        .gauge {
+            height: 30px;
+            background: #ddd;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+            transition: width 1s;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .recommendations {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .recommendations h3 {
+            color: #d3c938;
+            margin-bottom: 15px;
+        }
+        
+        .recommendations ul {
+            list-style: none;
+        }
+        
+        .recommendations li {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #d3c938;
+            border-radius: 4px;
+        }
+        
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #c00;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #d3c938;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Prédiction de Réussite aux Examens</h1>
+            <p>Réseau Bayésien - Modèle Entraîné sur Données Réelles</p>
+        </div>
+        
+        <div class="content">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Chargement du modèle...</p>
+            </div>
+            
+            <div id="error" class="error" style="display: none;"></div>
+            
+            <div id="main" style="display: none;">
+                <div class="question">
+                    <h3>📚 L'étudiant a-t-il révisé ?</h3>
+                    <div class="options">
+                        <div class="option">
+                            <input type="radio" id="rev1" name="revision" value="1" checked>
+                            <label for="rev1">✅ Oui</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" id="rev0" name="revision" value="0">
+                            <label for="rev0">❌ Non</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <h3>💪 L'étudiant a-t-il confiance ?</h3>
+                    <div class="options">
+                        <div class="option">
+                            <input type="radio" id="conf1" name="confiance" value="1" checked>
+                            <label for="conf1">✅ Oui</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" id="conf0" name="confiance" value="0">
+                            <label for="conf0">❌ Non</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <h3>🤒 L'étudiant est-il malade ?</h3>
+                    <div class="options">
+                        <div class="option">
+                            <input type="radio" id="mal1" name="malade" value="1">
+                            <label for="mal1">❌ Oui</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" id="mal0" name="malade" value="0" checked>
+                            <label for="mal0">✅ Non</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="calculer()">🔮 Calculer la Probabilité</button>
+                
+                <div id="result" class="result">
+                    <h2 style="color: #d3c938; margin-bottom: 20px;"> Résultats</h2>
+                    
+                    <div class="probs">
+                        <div class="prob-card success">
+                            <h4>RÉUSSITE</h4>
+                            <div class="percent" id="prob-success">0%</div>
+                        </div>
+                        <div class="prob-card fail">
+                            <h4>ÉCHEC</h4>
+                            <div class="percent" id="prob-fail">0%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="gauge">
+                        <div class="gauge-fill" id="gauge">0%</div>
+                    </div>
+                    
+                    <div class="recommendations">
+                        <h3>💡 Recommandations</h3>
+                        <ul id="recs"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let modelData = null;
+        
+        // Charger le modèle au démarrage
+        window.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('model_probabilities.json');
+                
+                if (!response.ok) {
+                    throw new Error('Fichier model_probabilities.json non trouvé');
+                }
+                
+                modelData = await response.json();
+                console.log('✅ Modèle chargé:', modelData);
+                
+                // Masquer le chargement
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main').style.display = 'block';
+                
+                // Calculer automatiquement avec les valeurs par défaut
+                calculer();
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                
+                // Afficher l'erreur
+                document.getElementById('loading').style.display = 'none';
+                const errorDiv = document.getElementById('error');
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `
+                    <strong>⚠️ Erreur de chargement</strong><br>
+                    ${error.message}<br><br>
+                    <strong>Solutions :</strong><br>
+                    1. Exécutez d'abord : <code>python train_bayesian_model_simple.py</code><br>
+                    2. Ou exécutez : <code>python lancer_tout.py</code><br>
+                    3. Vérifiez que le fichier model_probabilities.json existe
+                `;
+                
+                // Utiliser des données par défaut pour continuer
+                modelData = {
+                    "all_predictions": {
+                        "000": {"reussite": 26.9, "echec": 73.1},
+                        "001": {"reussite": 41.2, "echec": 58.8},
+                        "010": {"reussite": 52.9, "echec": 47.1},
+                        "011": {"reussite": 64.7, "echec": 35.3},
+                        "100": {"reussite": 13.0, "echec": 87.0},
+                        "101": {"reussite": 28.1, "echec": 71.9},
+                        "110": {"reussite": 39.9, "echec": 60.1},
+                        "111": {"reussite": 94.7, "echec": 5.3}
+                    }
+                };
+                
+                document.getElementById('main').style.display = 'block';
+            }
+        });
+        
+        function calculer() {
+            if (!modelData) {
+                alert('Le modèle n\'est pas encore chargé. Veuillez patienter...');
+                return;
+            }
+            
+            // Récupérer les valeurs
+            const rev = document.querySelector('input[name="revision"]:checked').value;
+            const conf = document.querySelector('input[name="confiance"]:checked').value;
+            const mal = document.querySelector('input[name="malade"]:checked').value;
+            
+            // Créer le code
+            const code = rev + conf + mal;
+            
+            // Récupérer la prédiction
+            const pred = modelData.all_predictions[code];
+            
+            if (!pred) {
+                alert('Prédiction non trouvée pour cette combinaison');
+                return;
+            }
+            
+            // Afficher les résultats
+            const probSuccess = pred.reussite;
+            const probFail = pred.echec;
+            
+            document.getElementById('prob-success').textContent = probSuccess.toFixed(1) + '%';
+            document.getElementById('prob-fail').textContent = probFail.toFixed(1) + '%';
+            
+            const gauge = document.getElementById('gauge');
+            gauge.style.width = probSuccess + '%';
+            gauge.textContent = probSuccess.toFixed(1) + '%';
+            
+            // Générer les recommandations
+            const recsList = document.getElementById('recs');
+            recsList.innerHTML = '';
+            
+            if (probSuccess < 50) {
+                recsList.innerHTML += '<li><strong>⚠️ Attention :</strong> Risque d\'échec élevé</li>';
+            } else if (probSuccess >= 80) {
+                recsList.innerHTML += '<li><strong>🎉 Excellent !</strong> Très bonnes chances de réussite</li>';
+            }
+            
+            if (rev === '0') {
+                recsList.innerHTML += '<li><strong>📚 Réviser :</strong> Cela augmentera significativement vos chances</li>';
+            }
+            
+            if (conf === '0') {
+                recsList.innerHTML += '<li><strong>💪 Confiance :</strong> Pratiquez des exercices pour gagner en assurance</li>';
+            }
+            
+            if (mal === '1') {
+                recsList.innerHTML += '<li><strong>🏥 Santé :</strong> Consultez un médecin et reposez-vous bien</li>';
+            }
+            
+            if (recsList.innerHTML === '') {
+                recsList.innerHTML = '<li>✅ Vous êtes dans les meilleures conditions. Continuez !</li>';
+            }
+            
+            // Afficher le résultat
+            document.getElementById('result').classList.add('show');
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
+v
